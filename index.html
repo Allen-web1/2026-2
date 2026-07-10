@@ -1,7 +1,15 @@
+학생들이나 다른 분들이 관리자 화면에 무단으로 들어오는 것을 막기 위해 안전장치를 마련하는 것은 필수적인 과정입니다! 아주 좋은 판단이십니다.
+
+요청하신 대로 관리자 버튼을 누르면 바로 목록이 나오는 것이 아니라, '관리자 로그인 화면'을 먼저 거치도록 수정했습니다. 여기서 설정해주신 아이디(`원종휘`)와 비밀번호(`jh73067533!!!`)를 정확히 입력해야만 전체 선생님 목록을 볼 수 있습니다.
+
+또한, 이전 답변에서 안내해 드렸던 **스마트폰 화면 맞춤(모바일 최적화) 코드**도 함께 적용해 두었습니다. 이제 이 코드를 복사해서 GitHub에 올리시면 완벽합니다!
+
+```html
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <!-- 🌟 스마트폰 화면에 크기를 맞춰주는 모바일 최적화 코드 🌟 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>수행평가 플래너</title>
   <style>
@@ -40,14 +48,13 @@
     .del { color: #D65745; font-weight: bold; cursor: pointer; }
     .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; font-size: 11px; margin-right: 6px; }
     .info-text { margin-top: 24px; font-size: 13px; color: #5E6B72; line-height: 1.6; background-color: white; padding: 16px; border-radius: 12px; border: 1px solid #E2E8E6; }
-    
-    /* 관리자 버튼 스타일 추가 */
     .admin-btn { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #8A939A; background: white; border: 1px solid #E2E8E6; border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .admin-btn:hover { background: #EEF2F1; color: #3F4A52; }
   </style>
 </head>
 <body>
 
+  <!-- 화면 1: 첫 화면 -->
   <div id="landingScreen">
     <div class="center">
       <h1>수행평가 플래너</h1>
@@ -62,9 +69,11 @@
       </div>
     </div>
     
-    <button class="admin-btn" onclick="showScreen('adminScreen')">⚙️ 관리자</button>
+    <!-- 우측 하단 관리자 버튼 (클릭 시 로그인 화면으로 이동) -->
+    <button class="admin-btn" onclick="showScreen('adminLoginScreen')">⚙️ 관리자</button>
   </div>
 
+  <!-- 화면 2: 선생님 회원가입 -->
   <div id="signupScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
@@ -76,6 +85,7 @@
     </div>
   </div>
 
+  <!-- 화면 3: 선생님 로그인 -->
   <div id="teacherLoginScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 로그인</h2>
@@ -88,6 +98,7 @@
     </div>
   </div>
 
+  <!-- 화면 3-1: 비밀번호 찾기 -->
   <div id="findPwScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">비밀번호 찾기</h2>
@@ -98,6 +109,7 @@
     </div>
   </div>
 
+  <!-- 화면 4: 선생님 등록 -->
   <div id="teacherScreen" style="display:none;">
     <div class="topbar">
       <h1 style="color:#3F6DB5;">수행평가 등록</h1>
@@ -144,11 +156,11 @@
         </div>
       </div>
       <label>과목</label>
-      <input id="inputSubject" placeholder="예: 수학">
+      <input id="inputSubject" placeholder="예: 과학탐구실험1">
       <label>수행평가명</label>
-      <input id="inputTitle" placeholder="예: 함수 서술형 평가">
+      <input id="inputTitle" placeholder="예: 파스퇴르의 생물속생설 도출 과정을 재연하여 연역적 탐구 방법 분석하기">
       <label>수행평가 주제</label>
-      <input id="inputTopic" placeholder="예: 이차함수 그래프 해석하기">
+      <input id="inputTopic" placeholder="예: 연역적 탐구 방법과 귀납적 탐구 방법 분석하기">
       <div class="row">
         <div>
           <label>날짜</label>
@@ -168,6 +180,7 @@
     <div id="teacherList"></div>
   </div>
 
+  <!-- 화면 5: 학생 조회 -->
   <div id="studentScreen" style="display:none;">
     <div class="topbar">
       <h1 style="color:#1F7A88;">내 수행평가</h1>
@@ -225,6 +238,18 @@
     <div id="studentList"></div>
   </div>
 
+  <!-- 화면 6-1: 관리자 로그인 화면 (새로 추가) -->
+  <div id="adminLoginScreen" style="display:none;">
+    <div class="box">
+      <h2 style="color:#D65745; margin-top:0;">관리자 로그인</h2>
+      <input id="adminId" placeholder="관리자 아이디">
+      <input id="adminPw" type="password" placeholder="비밀번호">
+      <button class="primary" style="background-color:#D65745;" onclick="adminLogin()">관리자 접속</button>
+      <button class="link" onclick="showScreen('landingScreen')">← 처음으로</button>
+    </div>
+  </div>
+
+  <!-- 화면 6-2: 관리자 모드 -->
   <div id="adminScreen" style="display:none;">
     <div class="topbar">
       <h1 style="color:#D65745;">관리자 모드</h1>
@@ -243,8 +268,8 @@
     let teacherName = "";    
 
     // ── 화면 전환 ─────────────────────────────────
-    // screens 배열에 adminScreen 추가
-    const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminScreen"];
+    // screens 배열에 adminLoginScreen 추가
+    const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminLoginScreen", "adminScreen"];
     
     function showScreen(id) {
       screens.forEach(function (s) {
@@ -252,8 +277,12 @@
       });
       document.getElementById(id).style.display = "block";
       
+      // 화면 전환 시 입력 필드 초기화
       if (id === 'findPwScreen') {
         document.getElementById("findPwName").value = "";
+      } else if (id === 'adminLoginScreen') {
+        document.getElementById("adminId").value = "";
+        document.getElementById("adminPw").value = "";
       }
       
       render();
@@ -330,6 +359,21 @@
 
       alert(found.이름 + " 선생님의 비밀번호는 [" + found.비밀번호 + "] 입니다.");
       showScreen("teacherLoginScreen");
+    }
+
+    // ── 관리자 로그인 기능 (새로 추가) ─────────
+    function adminLogin() {
+      const id = document.getElementById("adminId").value.trim();
+      const pw = document.getElementById("adminPw").value;
+
+      // 지정된 아이디와 비밀번호 확인
+      if (id === "원종휘" && pw === "jh73067533!!!") {
+        document.getElementById("adminId").value = "";
+        document.getElementById("adminPw").value = "";
+        showScreen("adminScreen"); // 일치하면 관리자 화면으로 이동
+      } else {
+        alert("관리자 아이디 또는 비밀번호가 올바르지 않습니다.");
+      }
     }
 
     function logout() {
@@ -457,10 +501,9 @@
       });
       renderTable("teacherList", assessments, true);
       renderTable("studentList", getFilteredForStudent(), false);
-      renderAdminList(); // 관리자 화면 리스트도 업데이트
+      renderAdminList(); 
     }
 
-    // 관리자 화면 선생님 목록 그리기
     function renderAdminList() {
       const list = document.getElementById("adminList");
       if (!list) return;
