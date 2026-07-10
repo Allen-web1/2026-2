@@ -68,6 +68,7 @@
   <div id="signupScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
+      <input id="signupSchool" placeholder="학교명 (예: 한국고등학교)">
       <input id="signupName" placeholder="이름 (예: 원선생)">
       <input id="signupPw" type="password" placeholder="비밀번호">
       <input id="signupPw2" type="password" placeholder="비밀번호 확인">
@@ -333,12 +334,13 @@
     }
 
     function signup() {
+      const school = document.getElementById("signupSchool").value.trim();
       const name = document.getElementById("signupName").value.trim();
       const pw = document.getElementById("signupPw").value;
       const pw2 = document.getElementById("signupPw2").value;
 
-      if (name === "" || pw === "") {
-        alert("이름과 비밀번호를 모두 입력해 주세요.");
+      if (school === "" || name === "" || pw === "") {
+        alert("학교명, 이름, 비밀번호를 모두 입력해 주세요.");
         return;
       }
       if (pw !== pw2) {
@@ -346,17 +348,18 @@
         return;
       }
       
-      // 선생님 이름 중복 가입 방지 (요청하신 문구로 수정)
+      // 선생님 이름 중복 가입 방지
       const exists = teachers.some(function (t) { return t.이름 === name; });
       if (exists) {
         alert("동명이인입니다. 이름(교과)로 가입해주세요. '예시: 원종휘(과학)'");
         return;
       }
 
-      teachers.push({ 이름: name, 비밀번호: pw });
+      teachers.push({ 학교명: school, 이름: name, 비밀번호: pw });
       saveTeachers();
       alert("가입 완료! 이제 로그인해 주세요.");
 
+      document.getElementById("signupSchool").value = "";
       document.getElementById("signupName").value = "";
       document.getElementById("signupPw").value = "";
       document.getElementById("signupPw2").value = "";
@@ -598,9 +601,10 @@
         return;
       }
 
-      let html = '<div class="table-wrap"><table><tr><th>선생님 이름</th><th>비밀번호</th><th>삭제</th></tr>';
+      let html = '<div class="table-wrap"><table><tr><th>학교명</th><th>선생님 이름</th><th>비밀번호</th><th>삭제</th></tr>';
       teachers.forEach(function(t, index) {
         html += '<tr>' +
+                '<td>' + (t.학교명 || "-") + '</td>' +
                 '<td>' + t.이름 + '</td>' +
                 '<td style="font-family: monospace; font-size: 14px; font-weight: bold; color: #1F7A88;">' + t.비밀번호 + '</td>' +
                 '<td><span class="del" onclick="deleteTeacher(' + index + ')">삭제</span></td>' +
