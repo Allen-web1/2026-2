@@ -45,6 +45,9 @@
     .admin-btn { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #8A939A; background: white; border: 1px solid #E2E8E6; border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .admin-btn:hover { background: #EEF2F1; color: #3F4A52; }
   </style>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
@@ -305,6 +308,26 @@
   </div>
 
   <script>
+    // =========================================================================
+    // 💡 전달해주신 파이어베이스 설정 코드 + 누락된 데이터베이스 URL 추가
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyABtoGeLL73U3J06spvN7ZRLWmLgQE2INA",
+      authDomain: "project-942164930636902697.firebaseapp.com",
+      databaseURL: "https://project-942164930636902697-default-rtdb.firebaseio.com", // 실시간 데이터베이스 작동을 위해 필수
+      projectId: "project-942164930636902697",
+      storageBucket: "project-942164930636902697.firebasestorage.app",
+      messagingSenderId: "67121578416",
+      appId: "1:67121578416:web:f62598832c2aa10df35675"
+    };
+
+    // 파이어베이스 초기화
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+    // =========================================================================
+
     let assessments = [];
     let teachers = [];       
     let teacherName = "";    
@@ -328,11 +351,33 @@
       render();
     }
 
-    // ── 회원가입 / 로그인 / 비밀번호 찾기 ─────────
+    // ── 파이어베이스 실시간 저장 ───────────────────────────
     function saveTeachers() {
-      localStorage.setItem("teachers", JSON.stringify(teachers));
+      db.ref('teachers').set(teachers);
+    }
+    
+    function save() {
+      db.ref('assessments').set(assessments);
     }
 
+    // ── 파이어베이스 실시간 불러오기 ───────────────────────
+    function load() {
+      // 1. 수행평가 데이터 실시간 감지
+      db.ref('assessments').on('value', function(snapshot) {
+        const data = snapshot.val();
+        assessments = data ? data : [];
+        render(); // 변경사항 즉시 화면에 반영
+      });
+
+      // 2. 선생님 계정 데이터 실시간 감지
+      db.ref('teachers').on('value', function(snapshot) {
+        const data = snapshot.val();
+        teachers = data ? data : [];
+        render(); // 변경사항 즉시 화면에 반영
+      });
+    }
+
+    // ── 회원가입 / 로그인 / 비밀번호 찾기 ─────────
     function signup() {
       const school = document.getElementById("signupSchool").value.trim();
       const name = document.getElementById("signupName").value.trim();
@@ -432,34 +477,11 @@
       }
       teachers.splice(index, 1);
       saveTeachers();
-      render();
     }
 
     function logout() {
       teacherName = "";
       showScreen("landingScreen");
-    }
-
-    // ── 저장 / 불러오기 ───────────────────────────
-    function save() {
-      localStorage.setItem("assessments", JSON.stringify(assessments));
-    }
-    
-    // 💡 변경된 부분: 초기 로딩 시 예시(더미) 데이터를 없애고 빈 상태로 시작하도록 수정했습니다.
-    function load() {
-      const saved = localStorage.getItem("assessments");
-      if (saved) {
-        assessments = JSON.parse(saved);
-      } else {
-        assessments = []; // 텅 빈 배열로 시작합니다.
-      }
-
-      const savedTeachers = localStorage.getItem("teachers");
-      if (savedTeachers) {
-        teachers = JSON.parse(savedTeachers);
-      } else {
-        teachers = [];
-      }
     }
 
     // ── D-day 계산 ────────────────────────────────
@@ -512,8 +534,6 @@
       document.getElementById("inputDate").value = "";
       document.getElementById("inputPeriod").value = "";
       document.getElementById("inputScore").value = "";
-
-      render();
     }
 
     function deleteAssessment(index) {
@@ -522,7 +542,6 @@
       }
       assessments.splice(index, 1);
       save();
-      render();
     }
 
     // ── 학생 화면 검색 ──────────────────────────────────────
@@ -653,10 +672,8 @@
         let delCell = '';
         if (canDelete) {
           if (viewMode === 'admin') {
-            // 관리자는 무조건 강제 삭제 가능
             delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">강제삭제</span></td>';
           } else if (viewMode === 'teacher') {
-            // 선생님은 본인 글만 삭제 가능
             if (item.작성자 === teacherName) {
               delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">삭제</span></td>';
             } else {
@@ -687,7 +704,7 @@
     }
 
     // ── 시작 ─────────────────────────────────────
-    load();
+    load(); // 페이지가 열리면 파이어베이스 실시간 연동 시작
     showScreen("landingScreen");
   </script>
 </body>
