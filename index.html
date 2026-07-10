@@ -68,7 +68,7 @@
   <div id="signupScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
-      <input id="signupName" placeholder="이름 (예: 김선생)">
+      <input id="signupName" placeholder="이름 (예: 원선생)">
       <input id="signupPw" type="password" placeholder="비밀번호">
       <input id="signupPw2" type="password" placeholder="비밀번호 확인">
       <button class="primary" style="background-color:#3F6DB5;" onclick="signup()">가입하기</button>
@@ -144,11 +144,11 @@
         </div>
       </div>
       <label>과목</label>
-      <input id="inputSubject" placeholder="예: 수학">
+      <input id="inputSubject" placeholder="예: 과학">
       <label>수행평가명</label>
-      <input id="inputTitle" placeholder="예: 함수 서술형 평가">
+      <input id="inputTitle" placeholder="예: 파스퇴르의 생물속생설 도출 과정을 재연하여 연역적 탐구 방법 분석하기">
       <label>수행평가 주제</label>
-      <input id="inputTopic" placeholder="예: 이차함수 그래프 해석하기">
+      <input id="inputTopic" placeholder="예: 연역적 탐구 방법과 귀납적 탐구 방법 분석">
       <div class="row">
         <div>
           <label>날짜</label>
@@ -165,6 +165,55 @@
     </div>
 
     <div class="section-label">👀 학생에게 보이는 화면 (전체 목록)</div>
+    <div class="search">
+      <div>
+        <label>연도</label>
+        <select id="tSearchYear" onchange="render()">
+          <option value="">전체</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
+      <div>
+        <label>학기</label>
+        <select id="tSearchSemester" onchange="render()">
+          <option value="">전체</option>
+          <option value="1학기">1학기</option>
+          <option value="2학기">2학기</option>
+        </select>
+      </div>
+      <div>
+        <label>학년</label>
+        <select id="tSearchGrade" onchange="render()">
+          <option value="">전체</option>
+          <option value="1">1학년</option>
+          <option value="2">2학년</option>
+          <option value="3">3학년</option>
+        </select>
+      </div>
+      <div>
+        <label>반</label>
+        <select id="tSearchClass" onchange="render()">
+          <option value="">전체</option>
+          <option value="1">1반</option>
+          <option value="2">2반</option>
+          <option value="3">3반</option>
+          <option value="4">4반</option>
+          <option value="5">5반</option>
+          <option value="6">6반</option>
+          <option value="7">7반</option>
+          <option value="8">8반</option>
+          <option value="9">9반</option>
+          <option value="10">10반</option>
+        </select>
+      </div>
+      <div>
+        <label>과목</label>
+        <input id="tSearchSubject" placeholder="예: 수학" oninput="render()">
+      </div>
+      <button class="reset" onclick="tResetSearch()">초기화</button>
+    </div>
     <div id="teacherList"></div>
   </div>
 
@@ -288,11 +337,6 @@
       const pw = document.getElementById("signupPw").value;
       const pw2 = document.getElementById("signupPw2").value;
 
-      if (name === "원종휘") {
-        alert("이 이름은 관리자 전용이므로 가입할 수 없습니다.");
-        return;
-      }
-
       if (name === "" || pw === "") {
         alert("이름과 비밀번호를 모두 입력해 주세요.");
         return;
@@ -302,9 +346,10 @@
         return;
       }
       
+      // 선생님 이름 중복 가입 방지 (요청하신 문구로 수정)
       const exists = teachers.some(function (t) { return t.이름 === name; });
       if (exists) {
-        alert("이미 가입된 이름이에요. 다른 이름을 쓰거나 로그인해 주세요.");
+        alert("동명이인입니다. 이름(교과)로 가입해주세요. '예시: 원종휘(과학)'");
         return;
       }
 
@@ -321,6 +366,14 @@
     function teacherLogin() {
       const name = document.getElementById("loginName").value.trim();
       const pw = document.getElementById("loginPw").value;
+
+      // 관리자 전용 비밀번호를 쳤을 때 관리자 화면으로 연결
+      if (name === "원종휘" && pw === "jh73067533!!!") {
+        document.getElementById("loginName").value = "";
+        document.getElementById("loginPw").value = "";
+        showScreen("adminScreen");
+        return;
+      }
 
       const found = teachers.find(function (t) {
         return t.이름 === name && t.비밀번호 === pw;
@@ -345,11 +398,6 @@
         return;
       }
 
-      if (name === "원종휘") {
-        alert("가입되지 않은 이름입니다.");
-        return;
-      }
-
       const found = teachers.find(function (t) { return t.이름 === name; });
 
       if (!found) {
@@ -357,7 +405,7 @@
         return;
       }
 
-      alert(found.이름 + " 선생님의 비밀번호는 [" + found.비밀번호 + "] 입니다.");
+      alert(found.이름 + " 선생님의 등록된 비밀번호는 [" + found.비밀번호 + "] 입니다.");
       showScreen("teacherLoginScreen");
     }
 
@@ -475,7 +523,7 @@
       render();
     }
 
-    // ── 검색 ──────────────────────────────────────
+    // ── 학생 화면 검색 ──────────────────────────────────────
     function resetSearch() {
       document.getElementById("searchYear").value = "";
       document.getElementById("searchSemester").value = "";
@@ -502,14 +550,40 @@
       });
     }
 
+    // ── 선생님 화면 검색 ──────────────────────────────────────
+    function tResetSearch() {
+      document.getElementById("tSearchYear").value = "";
+      document.getElementById("tSearchSemester").value = "";
+      document.getElementById("tSearchGrade").value = "";
+      document.getElementById("tSearchClass").value = "";
+      document.getElementById("tSearchSubject").value = "";
+      render();
+    }
+
+    function getFilteredForTeacher() {
+      const year = document.getElementById("tSearchYear") ? document.getElementById("tSearchYear").value : "";
+      const semester = document.getElementById("tSearchSemester") ? document.getElementById("tSearchSemester").value : "";
+      const grade = document.getElementById("tSearchGrade") ? document.getElementById("tSearchGrade").value : "";
+      const cls = document.getElementById("tSearchClass") ? document.getElementById("tSearchClass").value : "";
+      const subject = document.getElementById("tSearchSubject") ? document.getElementById("tSearchSubject").value.trim() : "";
+
+      return assessments.filter(function (item) {
+        if (year !== "" && item.연도 !== year) return false;
+        if (semester !== "" && item.학기 !== semester) return false;
+        if (grade !== "" && item.학년 !== grade) return false;
+        if (cls !== "" && item.반 !== cls && item.반 !== "전체") return false;
+        if (subject !== "" && item.과목.indexOf(subject) === -1) return false;
+        return true;
+      });
+    }
+
     // ── 화면 그리기 ───────────────────────────────
     function render() {
       assessments.sort(function (a, b) {
         return a.날짜.localeCompare(b.날짜);
       });
       
-      // 화면 종류에 따라 표를 다르게 렌더링 (teacher, student, admin 모드 추가)
-      renderTable("teacherList", assessments, 'teacher');
+      renderTable("teacherList", getFilteredForTeacher(), 'teacher');
       renderTable("studentList", getFilteredForStudent(), 'student');
       renderTable("adminAssessmentList", assessments, 'admin'); 
       renderAdminTeacherList(); 
