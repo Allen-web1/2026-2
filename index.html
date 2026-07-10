@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수행평가 플래너</title>
+  <style>
+    body { font-family: sans-serif; background-color: #EEF2F1; color: #1E2A30; margin: 0; padding: 20px; }
+    .center { max-width: 400px; margin: 40px auto; text-align: center; }
+    .center h1 { color: #1F7A88; font-size: 26px; }
+    .role-btn { display: block; width: 100%; padding: 18px; margin-bottom: 14px; border-radius: 14px; border: 1px solid #E2E8E6; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .role-teacher { background-color: #3F6DB5; color: white; }
+    .role-signup { background-color: #E1E9F5; color: #3F6DB5; }
+    .role-student { background-color: #DCEDEF; color: #1F7A88; }
+    .box { max-width: 400px; margin: 40px auto; background: white; border: 1px solid #E2E8E6; border-radius: 14px; padding: 20px; }
+    .box input { width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 10px; border: 1px solid #E2E8E6; border-radius: 8px; font-size: 14px; }
+    .box .primary { width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-size: 14px; font-weight: bold; cursor: pointer; }
+    .link { display: block; margin-top: 12px; background: none; border: none; color: #5E6B72; font-size: 13px; cursor: pointer; width: 100%; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .topbar h1 { font-size: 22px; margin: 0; }
+    .logout { background: none; border: 1px solid #E2E8E6; border-radius: 8px; padding: 6px 12px; font-size: 12px; color: #5E6B72; cursor: pointer; }
+    .form { background-color: white; border: 1px solid #E2E8E6; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+    .form label { font-size: 13px; font-weight: bold; display: block; margin-bottom: 3px; }
+    .form input, .form select { width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 10px; border: 1px solid #E2E8E6; border-radius: 8px; font-size: 14px; }
+    .form .row { display: flex; gap: 10px; }
+    .form .row > div { flex: 1; }
+    .form .submit { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #3F6DB5; color: white; font-size: 14px; font-weight: bold; cursor: pointer; }
+    .empty { text-align: center; color: #5E6B72; padding: 24px; background: white; border: 1px solid #E2E8E6; border-radius: 12px; }
+    .section-label { font-size: 13px; font-weight: bold; color: #5E6B72; margin: 20px 0 8px; }
+    .search { background: white; border: 1px solid #E2E8E6; border-radius: 12px; padding: 14px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+    .search > div { flex: 1; min-width: 90px; }
+    .search label { font-size: 12px; font-weight: bold; color: #5E6B72; display: block; margin-bottom: 3px; }
+    .search select, .search input { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #E2E8E6; border-radius: 8px; font-size: 14px; }
+    .search .reset { flex: 0 0 auto; background: #EEF2F1; border: 1px solid #E2E8E6; border-radius: 8px; padding: 9px 14px; font-size: 13px; color: #5E6B72; cursor: pointer; }
+    .table-wrap { overflow-x: auto; background: white; border: 1px solid #E2E8E6; border-radius: 12px; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; white-space: nowrap; }
+    th { background-color: #1F7A88; color: white; font-weight: bold; padding: 10px 12px; text-align: left; }
+    td { padding: 10px 12px; border-top: 1px solid #E2E8E6; color: #3F4A52; }
+    tr:nth-child(even) td { background-color: #F7FAF9; }
+    .del { color: #D65745; font-weight: bold; cursor: pointer; }
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; font-size: 11px; margin-right: 6px; }
+    .info-text { margin-top: 24px; font-size: 13px; color: #5E6B72; line-height: 1.6; background-color: white; padding: 16px; border-radius: 12px; border: 1px solid #E2E8E6; }
+    
+    /* 관리자 버튼 스타일 추가 */
+    .admin-btn { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #8A939A; background: white; border: 1px solid #E2E8E6; border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .admin-btn:hover { background: #EEF2F1; color: #3F4A52; }
+  </style>
+</head>
+<body>
+
+  <div id="landingScreen">
+    <div class="center">
+      <h1>수행평가 플래너</h1>
+      <p style="color:#5E6B72;">선생님은 등록하고, 학생은 확인해요.</p>
+      <button class="role-btn role-teacher" onclick="showScreen('teacherLoginScreen')">선생님만 로그인</button>
+      <button class="role-btn role-signup" onclick="showScreen('signupScreen')">선생님만 회원가입</button>
+      <button class="role-btn role-student" onclick="showScreen('studentScreen')">★수행평가 일정 확인하기(학생용)★</button>
+      
+      <div class="info-text">
+        <strong>선생님</strong>만 회원가입 필요<br>
+        <strong>학생</strong>은 바로 '★수행평가 일정 확인하기(학생용)★' 클릭
+      </div>
+    </div>
+    
+    <button class="admin-btn" onclick="showScreen('adminScreen')">⚙️ 관리자</button>
+  </div>
+
+  <div id="signupScreen" style="display:none;">
+    <div class="box">
+      <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
+      <input id="signupName" placeholder="이름 (예: 김선생)">
+      <input id="signupPw" type="password" placeholder="비밀번호">
+      <input id="signupPw2" type="password" placeholder="비밀번호 확인">
+      <button class="primary" style="background-color:#3F6DB5;" onclick="signup()">가입하기</button>
+      <button class="link" onclick="showScreen('landingScreen')">← 처음으로</button>
+    </div>
+  </div>
+
+  <div id="teacherLoginScreen" style="display:none;">
+    <div class="box">
+      <h2 style="color:#3F6DB5; margin-top:0;">선생님 로그인</h2>
+      <input id="loginName" placeholder="이름">
+      <input id="loginPw" type="password" placeholder="비밀번호">
+      <button class="primary" style="background-color:#3F6DB5;" onclick="teacherLogin()">로그인</button>
+      <button class="link" onclick="showScreen('findPwScreen')">비밀번호를 잊으셨나요? 비밀번호 찾기</button>
+      <button class="link" onclick="showScreen('signupScreen')">계정이 없으신가요? 회원가입</button>
+      <button class="link" onclick="showScreen('landingScreen')">← 처음으로</button>
+    </div>
+  </div>
+
+  <div id="findPwScreen" style="display:none;">
+    <div class="box">
+      <h2 style="color:#3F6DB5; margin-top:0;">비밀번호 찾기</h2>
+      <p style="font-size:13px; color:#5E6B72;">가입 시 입력했던 이름을 입력해 주세요.</p>
+      <input id="findPwName" placeholder="가입한 이름">
+      <button class="primary" style="background-color:#3F6DB5;" onclick="findPassword()">비밀번호 확인</button>
+      <button class="link" onclick="showScreen('teacherLoginScreen')">← 로그인 화면으로</button>
+    </div>
+  </div>
+
+  <div id="teacherScreen" style="display:none;">
+    <div class="topbar">
+      <h1 style="color:#3F6DB5;">수행평가 등록</h1>
+      <button class="logout" onclick="logout()">로그아웃</button>
+    </div>
+    <div class="form">
+      <div class="row">
+        <div>
+          <label>연도</label>
+          <input id="inputYear" type="number" value="2026" placeholder="2026">
+        </div>
+        <div>
+          <label>학기</label>
+          <select id="inputSemester">
+            <option value="1학기">1학기</option>
+            <option value="2학기">2학기</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>학년</label>
+          <select id="inputGrade">
+            <option value="1">1학년</option>
+            <option value="2">2학년</option>
+            <option value="3">3학년</option>
+          </select>
+        </div>
+        <div>
+          <label>반</label>
+          <select id="inputClass">
+            <option value="전체">전체</option>
+            <option value="1">1반</option>
+            <option value="2">2반</option>
+            <option value="3">3반</option>
+            <option value="4">4반</option>
+            <option value="5">5반</option>
+            <option value="6">6반</option>
+            <option value="7">7반</option>
+            <option value="8">8반</option>
+            <option value="9">9반</option>
+            <option value="10">10반</option>
+          </select>
+        </div>
+      </div>
+      <label>과목</label>
+      <input id="inputSubject" placeholder="예: 수학">
+      <label>수행평가명</label>
+      <input id="inputTitle" placeholder="예: 함수 서술형 평가">
+      <label>수행평가 주제</label>
+      <input id="inputTopic" placeholder="예: 이차함수 그래프 해석하기">
+      <div class="row">
+        <div>
+          <label>날짜</label>
+          <input id="inputDate" type="date">
+        </div>
+        <div>
+          <label>교시</label>
+          <input id="inputPeriod" placeholder="예: 3교시">
+        </div>
+      </div>
+      <label>배점</label>
+      <input id="inputScore" placeholder="예: 20점">
+      <button class="submit" onclick="addAssessment()">+ 등록하기</button>
+    </div>
+
+    <div class="section-label">👀 학생에게 보이는 화면 (전체 목록)</div>
+    <div id="teacherList"></div>
+  </div>
+
+  <div id="studentScreen" style="display:none;">
+    <div class="topbar">
+      <h1 style="color:#1F7A88;">내 수행평가</h1>
+      <button class="logout" onclick="showScreen('landingScreen')">처음으로</button>
+    </div>
+    <div class="search">
+      <div>
+        <label>연도</label>
+        <select id="searchYear" onchange="render()">
+          <option value="">전체</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
+      <div>
+        <label>학기</label>
+        <select id="searchSemester" onchange="render()">
+          <option value="">전체</option>
+          <option value="1학기">1학기</option>
+          <option value="2학기">2학기</option>
+        </select>
+      </div>
+      <div>
+        <label>학년</label>
+        <select id="searchGrade" onchange="render()">
+          <option value="">전체</option>
+          <option value="1">1학년</option>
+          <option value="2">2학년</option>
+          <option value="3">3학년</option>
+        </select>
+      </div>
+      <div>
+        <label>반</label>
+        <select id="searchClass" onchange="render()">
+          <option value="">전체</option>
+          <option value="1">1반</option>
+          <option value="2">2반</option>
+          <option value="3">3반</option>
+          <option value="4">4반</option>
+          <option value="5">5반</option>
+          <option value="6">6반</option>
+          <option value="7">7반</option>
+          <option value="8">8반</option>
+          <option value="9">9반</option>
+          <option value="10">10반</option>
+        </select>
+      </div>
+      <div>
+        <label>과목</label>
+        <input id="searchSubject" placeholder="예: 수학" oninput="render()">
+      </div>
+      <button class="reset" onclick="resetSearch()">초기화</button>
+    </div>
+    <div id="studentList"></div>
+  </div>
+
+  <div id="adminScreen" style="display:none;">
+    <div class="topbar">
+      <h1 style="color:#D65745;">관리자 모드</h1>
+      <button class="logout" onclick="showScreen('landingScreen')">처음으로</button>
+    </div>
+    <div class="box" style="max-width: 500px;">
+      <h2 style="color:#D65745; margin-top:0; font-size: 18px;">선생님 계정 관리</h2>
+      <p style="font-size:13px; color:#5E6B72;">현재 가입된 선생님들의 이름과 비밀번호 목록입니다.</p>
+      <div id="adminList"></div>
+    </div>
+  </div>
+
+  <script>
+    let assessments = [];
+    let teachers = [];       
+    let teacherName = "";    
+
+    // ── 화면 전환 ─────────────────────────────────
+    // screens 배열에 adminScreen 추가
+    const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminScreen"];
+    
+    function showScreen(id) {
+      screens.forEach(function (s) {
+        document.getElementById(s).style.display = "none";
+      });
+      document.getElementById(id).style.display = "block";
+      
+      if (id === 'findPwScreen') {
+        document.getElementById("findPwName").value = "";
+      }
+      
+      render();
+    }
+
+    // ── 회원가입 / 로그인 / 비밀번호 찾기 ─────────
+    function saveTeachers() {
+      localStorage.setItem("teachers", JSON.stringify(teachers));
+    }
+
+    function signup() {
+      const name = document.getElementById("signupName").value.trim();
+      const pw = document.getElementById("signupPw").value;
+      const pw2 = document.getElementById("signupPw2").value;
+
+      if (name === "" || pw === "") {
+        alert("이름과 비밀번호를 모두 입력해 주세요.");
+        return;
+      }
+      if (pw !== pw2) {
+        alert("비밀번호가 서로 달라요. 다시 확인해 주세요.");
+        return;
+      }
+      
+      const exists = teachers.some(function (t) { return t.이름 === name; });
+      if (exists) {
+        alert("이미 가입된 이름이에요. 다른 이름을 쓰거나 로그인해 주세요.");
+        return;
+      }
+
+      teachers.push({ 이름: name, 비밀번호: pw });
+      saveTeachers();
+      alert("가입 완료! 이제 로그인해 주세요.");
+
+      document.getElementById("signupName").value = "";
+      document.getElementById("signupPw").value = "";
+      document.getElementById("signupPw2").value = "";
+      showScreen("teacherLoginScreen");
+    }
+
+    function teacherLogin() {
+      const name = document.getElementById("loginName").value.trim();
+      const pw = document.getElementById("loginPw").value;
+
+      const found = teachers.find(function (t) {
+        return t.이름 === name && t.비밀번호 === pw;
+      });
+
+      if (!found) {
+        alert("이름 또는 비밀번호가 올바르지 않아요.");
+        return;
+      }
+
+      teacherName = found.이름;
+      document.getElementById("loginName").value = "";
+      document.getElementById("loginPw").value = "";
+      showScreen("teacherScreen");
+    }
+    
+    function findPassword() {
+      const name = document.getElementById("findPwName").value.trim();
+
+      if (name === "") {
+        alert("이름을 입력해 주세요.");
+        return;
+      }
+
+      const found = teachers.find(function (t) { return t.이름 === name; });
+
+      if (!found) {
+        alert("가입되지 않은 이름입니다.");
+        return;
+      }
+
+      alert(found.이름 + " 선생님의 비밀번호는 [" + found.비밀번호 + "] 입니다.");
+      showScreen("teacherLoginScreen");
+    }
+
+    function logout() {
+      teacherName = "";
+      showScreen("landingScreen");
+    }
+
+    // ── 저장 / 불러오기 ───────────────────────────
+    function save() {
+      localStorage.setItem("assessments", JSON.stringify(assessments));
+    }
+    function load() {
+      const saved = localStorage.getItem("assessments");
+      if (saved) {
+        assessments = JSON.parse(saved);
+      } else {
+        assessments = [
+          { 연도:"2026", 학기:"1학기", 학년:"1", 반:"3", 과목:"국어", 수행평가명:"시 낭송 발표", 주제:"좋아하는 시 낭송하기", 날짜:"2026-07-14", 교시:"3교시", 배점:"20점", 작성자:"이국어" },
+          { 연도:"2026", 학기:"1학기", 학년:"1", 반:"전체", 과목:"과학", 수행평가명:"탐구 보고서", 주제:"주변 현상 탐구하기", 날짜:"2026-07-20", 교시:"종례 전", 배점:"25점", 작성자:"박과학" }
+        ];
+      }
+
+      const savedTeachers = localStorage.getItem("teachers");
+      if (savedTeachers) {
+        teachers = JSON.parse(savedTeachers);
+      } else {
+        teachers = [];
+      }
+    }
+
+    // ── D-day 계산 ────────────────────────────────
+    function getDday(dateText) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const target = new Date(dateText);
+      target.setHours(0, 0, 0, 0);
+      return Math.round((target - today) / (1000 * 60 * 60 * 24));
+    }
+    function ddayLabel(n) {
+      if (n === 0) return "오늘";
+      if (n === 1) return "내일";
+      if (n > 1) return "D-" + n;
+      return "지남";
+    }
+    function ddayColor(n) {
+      if (n <= 1) return "#D65745";
+      if (n <= 7) return "#DE9A2E";
+      return "#4A8C6A";
+    }
+
+    // ── 추가 / 삭제 ───────────────────────────────
+    function addAssessment() {
+      const item = {
+        연도: document.getElementById("inputYear").value,
+        학기: document.getElementById("inputSemester").value,
+        학년: document.getElementById("inputGrade").value,
+        반: document.getElementById("inputClass").value,
+        과목: document.getElementById("inputSubject").value,
+        수행평가명: document.getElementById("inputTitle").value,
+        주제: document.getElementById("inputTopic").value,
+        날짜: document.getElementById("inputDate").value,
+        교시: document.getElementById("inputPeriod").value,
+        배점: document.getElementById("inputScore").value,
+        작성자: teacherName
+      };
+
+      if (item.과목 === "" || item.수행평가명 === "" || item.날짜 === "") {
+        alert("과목, 수행평가명, 날짜는 반드시 입력해 주세요.");
+        return;
+      }
+
+      assessments.push(item);
+      save();
+
+      document.getElementById("inputSubject").value = "";
+      document.getElementById("inputTitle").value = "";
+      document.getElementById("inputTopic").value = "";
+      document.getElementById("inputDate").value = "";
+      document.getElementById("inputPeriod").value = "";
+      document.getElementById("inputScore").value = "";
+
+      render();
+    }
+
+    function deleteAssessment(index) {
+      if (!confirm("이 수행평가를 삭제할까요?")) {
+        return;
+      }
+      assessments.splice(index, 1);
+      save();
+      render();
+    }
+
+    // ── 검색 ──────────────────────────────────────
+    function resetSearch() {
+      document.getElementById("searchYear").value = "";
+      document.getElementById("searchSemester").value = "";
+      document.getElementById("searchGrade").value = "";
+      document.getElementById("searchClass").value = "";
+      document.getElementById("searchSubject").value = "";
+      render();
+    }
+
+    function getFilteredForStudent() {
+      const year = document.getElementById("searchYear").value;
+      const semester = document.getElementById("searchSemester").value;
+      const grade = document.getElementById("searchGrade").value;
+      const cls = document.getElementById("searchClass").value;
+      const subject = document.getElementById("searchSubject").value.trim();
+
+      return assessments.filter(function (item) {
+        if (year !== "" && item.연도 !== year) return false;
+        if (semester !== "" && item.학기 !== semester) return false;
+        if (grade !== "" && item.학년 !== grade) return false;
+        if (cls !== "" && item.반 !== cls && item.반 !== "전체") return false;
+        if (subject !== "" && item.과목.indexOf(subject) === -1) return false;
+        return true;
+      });
+    }
+
+    // ── 화면 그리기 ───────────────────────────────
+    function render() {
+      assessments.sort(function (a, b) {
+        return a.날짜.localeCompare(b.날짜);
+      });
+      renderTable("teacherList", assessments, true);
+      renderTable("studentList", getFilteredForStudent(), false);
+      renderAdminList(); // 관리자 화면 리스트도 업데이트
+    }
+
+    // 관리자 화면 선생님 목록 그리기
+    function renderAdminList() {
+      const list = document.getElementById("adminList");
+      if (!list) return;
+
+      if (teachers.length === 0) {
+        list.innerHTML = '<p class="empty">가입한 선생님이 없습니다.</p>';
+        return;
+      }
+
+      let html = '<div class="table-wrap"><table><tr><th>선생님 이름</th><th>비밀번호</th></tr>';
+      teachers.forEach(function(t) {
+        html += '<tr><td>' + t.이름 + '</td><td style="font-family: monospace; font-size: 14px; font-weight: bold; color: #1F7A88;">' + t.비밀번호 + '</td></tr>';
+      });
+      html += '</table></div>';
+      list.innerHTML = html;
+    }
+
+    function renderTable(listId, rows, isTeacherView) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+
+      if (rows.length === 0) {
+        list.innerHTML = '<p class="empty">조건에 맞는 수행평가가 없어요.</p>';
+        return;
+      }
+
+      let html =
+        '<div class="table-wrap"><table>' +
+        '<tr>' +
+          '<th>연도</th>' +
+          '<th>학기</th>' +
+          '<th>학년</th>' +
+          '<th>반</th>' +
+          '<th>과목</th>' +
+          '<th>수행평가명</th>' +
+          '<th>수행평가 주제</th>' +
+          '<th>날짜 (D-day)</th>' +
+          '<th>교시</th>' +
+          '<th>배점</th>' +
+          '<th>작성 교사</th>' +
+          (isTeacherView ? '<th>삭제</th>' : '') +
+        '</tr>';
+
+      rows.forEach(function (item) {
+        const classText = (item.반 === "전체") ? "공통" : (item.반 + "반");
+        const realIndex = assessments.indexOf(item);
+        
+        const ddayDays = getDday(item.날짜);
+        const ddayText = ddayLabel(ddayDays);
+        const ddayBgColor = ddayColor(ddayDays);
+        const ddayBadgeHtml = '<span class="badge" style="background-color:' + ddayBgColor + ';">' + ddayText + '</span>';
+
+        let delCell = '';
+        if (isTeacherView) {
+          if (item.작성자 === teacherName) {
+            delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">삭제</span></td>';
+          } else {
+            delCell = '<td style="color:#C4CBC8; font-size:11px;">권한없음</td>';
+          }
+        }
+
+        html +=
+          '<tr>' +
+            '<td>' + item.연도 + '</td>' +
+            '<td>' + item.학기 + '</td>' +
+            '<td>' + item.학년 + '학년</td>' +
+            '<td>' + classText + '</td>' +
+            '<td>' + item.과목 + '</td>' +
+            '<td>' + item.수행평가명 + '</td>' +
+            '<td>' + (item.주제 || "-") + '</td>' +
+            '<td>' + ddayBadgeHtml + item.날짜 + '</td>' +
+            '<td>' + (item.교시 || "-") + '</td>' +
+            '<td>' + (item.배점 || "-") + '</td>' +
+            '<td>' + (item.작성자 || "-") + '</td>' +
+            delCell +
+          '</tr>';
+      });
+
+      html += '</table></div>';
+      list.innerHTML = html;
+    }
+
+    // ── 시작 ─────────────────────────────────────
+    load();
+    showScreen("landingScreen");
+  </script>
+</body>
+</html>
