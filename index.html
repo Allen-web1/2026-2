@@ -68,7 +68,7 @@
   <div id="signupScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
-      <input id="signupSchool" placeholder="학교명 (예: 인천고잔고등학교)">
+      <input id="signupSchool" placeholder="학교명 (예: 한국고등학교)">
       <input id="signupName" placeholder="이름 (예: 원선생)">
       <input id="signupPw" type="password" placeholder="비밀번호">
       <input id="signupPw2" type="password" placeholder="비밀번호 확인">
@@ -444,15 +444,14 @@
     function save() {
       localStorage.setItem("assessments", JSON.stringify(assessments));
     }
+    
+    // 💡 변경된 부분: 초기 로딩 시 예시(더미) 데이터를 없애고 빈 상태로 시작하도록 수정했습니다.
     function load() {
       const saved = localStorage.getItem("assessments");
       if (saved) {
         assessments = JSON.parse(saved);
       } else {
-        assessments = [
-          { 연도:"2026", 학기:"1학기", 학년:"1", 반:"3", 과목:"국어", 수행평가명:"시 낭송 발표", 주제:"좋아하는 시 낭송하기", 날짜:"2026-07-14", 교시:"3교시", 배점:"20점", 작성자:"이국어" },
-          { 연도:"2026", 학기:"1학기", 학년:"1", 반:"전체", 과목:"과학", 수행평가명:"탐구 보고서", 주제:"주변 현상 탐구하기", 날짜:"2026-07-20", 교시:"종례 전", 배점:"25점", 작성자:"박과학" }
-        ];
+        assessments = []; // 텅 빈 배열로 시작합니다.
       }
 
       const savedTeachers = localStorage.getItem("teachers");
