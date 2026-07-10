@@ -2,7 +2,6 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <!-- 🌟 스마트폰 화면에 크기를 맞춰주는 모바일 최적화 코드 🌟 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>수행평가 플래너</title>
   <style>
@@ -33,7 +32,7 @@
     .search label { font-size: 12px; font-weight: bold; color: #5E6B72; display: block; margin-bottom: 3px; }
     .search select, .search input { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #E2E8E6; border-radius: 8px; font-size: 14px; }
     .search .reset { flex: 0 0 auto; background: #EEF2F1; border: 1px solid #E2E8E6; border-radius: 8px; padding: 9px 14px; font-size: 13px; color: #5E6B72; cursor: pointer; }
-    .table-wrap { overflow-x: auto; background: white; border: 1px solid #E2E8E6; border-radius: 12px; }
+    .table-wrap { overflow-x: auto; background: white; border: 1px solid #E2E8E6; border-radius: 12px; margin-bottom: 24px; }
     table { border-collapse: collapse; width: 100%; font-size: 13px; white-space: nowrap; }
     th { background-color: #1F7A88; color: white; font-weight: bold; padding: 10px 12px; text-align: left; }
     td { padding: 10px 12px; border-top: 1px solid #E2E8E6; color: #3F4A52; }
@@ -41,13 +40,14 @@
     .del { color: #D65745; font-weight: bold; cursor: pointer; }
     .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; font-size: 11px; margin-right: 6px; }
     .info-text { margin-top: 24px; font-size: 13px; color: #5E6B72; line-height: 1.6; background-color: white; padding: 16px; border-radius: 12px; border: 1px solid #E2E8E6; }
+    
+    /* 관리자 버튼 스타일 */
     .admin-btn { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #8A939A; background: white; border: 1px solid #E2E8E6; border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .admin-btn:hover { background: #EEF2F1; color: #3F4A52; }
   </style>
 </head>
 <body>
 
-  <!-- 화면 1: 첫 화면 -->
   <div id="landingScreen">
     <div class="center">
       <h1>수행평가 플래너</h1>
@@ -62,15 +62,13 @@
       </div>
     </div>
     
-    <!-- 우측 하단 관리자 버튼 (클릭 시 로그인 화면으로 이동) -->
     <button class="admin-btn" onclick="showScreen('adminLoginScreen')">⚙️ 관리자</button>
   </div>
 
-  <!-- 화면 2: 선생님 회원가입 -->
   <div id="signupScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
-      <input id="signupName" placeholder="이름 (예: 원선생)">
+      <input id="signupName" placeholder="이름 (예: 김선생)">
       <input id="signupPw" type="password" placeholder="비밀번호">
       <input id="signupPw2" type="password" placeholder="비밀번호 확인">
       <button class="primary" style="background-color:#3F6DB5;" onclick="signup()">가입하기</button>
@@ -78,7 +76,6 @@
     </div>
   </div>
 
-  <!-- 화면 3: 선생님 로그인 -->
   <div id="teacherLoginScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 로그인</h2>
@@ -91,7 +88,6 @@
     </div>
   </div>
 
-  <!-- 화면 3-1: 비밀번호 찾기 -->
   <div id="findPwScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">비밀번호 찾기</h2>
@@ -102,7 +98,6 @@
     </div>
   </div>
 
-  <!-- 화면 4: 선생님 등록 -->
   <div id="teacherScreen" style="display:none;">
     <div class="topbar">
       <h1 style="color:#3F6DB5;">수행평가 등록</h1>
@@ -149,11 +144,11 @@
         </div>
       </div>
       <label>과목</label>
-      <input id="inputSubject" placeholder="예: 과학탐구실험1">
+      <input id="inputSubject" placeholder="예: 수학">
       <label>수행평가명</label>
-      <input id="inputTitle" placeholder="예: 파스퇴르의 생물속생설 도출 과정을 재연하여 연역적 탐구 방법 분석하기">
+      <input id="inputTitle" placeholder="예: 함수 서술형 평가">
       <label>수행평가 주제</label>
-      <input id="inputTopic" placeholder="예: 연역적 탐구 방법과 귀납적 탐구 방법 분석하기">
+      <input id="inputTopic" placeholder="예: 이차함수 그래프 해석하기">
       <div class="row">
         <div>
           <label>날짜</label>
@@ -173,7 +168,6 @@
     <div id="teacherList"></div>
   </div>
 
-  <!-- 화면 5: 학생 조회 -->
   <div id="studentScreen" style="display:none;">
     <div class="topbar">
       <h1 style="color:#1F7A88;">내 수행평가</h1>
@@ -231,7 +225,6 @@
     <div id="studentList"></div>
   </div>
 
-  <!-- 화면 6-1: 관리자 로그인 화면 (새로 추가) -->
   <div id="adminLoginScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#D65745; margin-top:0;">관리자 로그인</h2>
@@ -242,17 +235,23 @@
     </div>
   </div>
 
-  <!-- 화면 6-2: 관리자 모드 -->
   <div id="adminScreen" style="display:none;">
     <div class="topbar">
       <h1 style="color:#D65745;">관리자 모드</h1>
       <button class="logout" onclick="showScreen('landingScreen')">처음으로</button>
     </div>
-    <div class="box" style="max-width: 500px;">
+    
+    <div class="box" style="max-width: 500px; margin-bottom: 20px;">
       <h2 style="color:#D65745; margin-top:0; font-size: 18px;">선생님 계정 관리</h2>
-      <p style="font-size:13px; color:#5E6B72;">현재 가입된 선생님들의 이름과 비밀번호 목록입니다.</p>
-      <div id="adminList"></div>
+      <p style="font-size:13px; color:#5E6B72;">가입된 선생님 계정을 삭제할 수 있습니다.</p>
+      <div id="adminTeacherList"></div>
     </div>
+    
+    <div class="box" style="max-width: 100%; margin-top: 0; padding-bottom: 5px;">
+      <h2 style="color:#D65745; margin-top:0; font-size: 18px;">전체 수행평가 관리</h2>
+      <p style="font-size:13px; color:#5E6B72;">등록된 모든 수행평가를 강제로 삭제할 수 있습니다.</p>
+    </div>
+    <div id="adminAssessmentList"></div>
   </div>
 
   <script>
@@ -261,7 +260,6 @@
     let teacherName = "";    
 
     // ── 화면 전환 ─────────────────────────────────
-    // screens 배열에 adminLoginScreen 추가
     const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminLoginScreen", "adminScreen"];
     
     function showScreen(id) {
@@ -270,7 +268,6 @@
       });
       document.getElementById(id).style.display = "block";
       
-      // 화면 전환 시 입력 필드 초기화
       if (id === 'findPwScreen') {
         document.getElementById("findPwName").value = "";
       } else if (id === 'adminLoginScreen') {
@@ -290,6 +287,11 @@
       const name = document.getElementById("signupName").value.trim();
       const pw = document.getElementById("signupPw").value;
       const pw2 = document.getElementById("signupPw2").value;
+
+      if (name === "원종휘") {
+        alert("이 이름은 관리자 전용이므로 가입할 수 없습니다.");
+        return;
+      }
 
       if (name === "" || pw === "") {
         alert("이름과 비밀번호를 모두 입력해 주세요.");
@@ -343,6 +345,11 @@
         return;
       }
 
+      if (name === "원종휘") {
+        alert("가입되지 않은 이름입니다.");
+        return;
+      }
+
       const found = teachers.find(function (t) { return t.이름 === name; });
 
       if (!found) {
@@ -354,19 +361,27 @@
       showScreen("teacherLoginScreen");
     }
 
-    // ── 관리자 로그인 기능 (새로 추가) ─────────
+    // ── 관리자 기능 (로그인 및 교사 삭제) ─────────
     function adminLogin() {
       const id = document.getElementById("adminId").value.trim();
       const pw = document.getElementById("adminPw").value;
 
-      // 지정된 아이디와 비밀번호 확인
       if (id === "원종휘" && pw === "jh73067533!!!") {
         document.getElementById("adminId").value = "";
         document.getElementById("adminPw").value = "";
-        showScreen("adminScreen"); // 일치하면 관리자 화면으로 이동
+        showScreen("adminScreen");
       } else {
         alert("관리자 아이디 또는 비밀번호가 올바르지 않습니다.");
       }
+    }
+    
+    function deleteTeacher(index) {
+      if (!confirm("이 선생님 계정을 정말 삭제할까요?")) {
+        return;
+      }
+      teachers.splice(index, 1);
+      saveTeachers();
+      render();
     }
 
     function logout() {
@@ -417,7 +432,7 @@
       return "#4A8C6A";
     }
 
-    // ── 추가 / 삭제 ───────────────────────────────
+    // ── 수행평가 추가 / 삭제 ──────────────────────
     function addAssessment() {
       const item = {
         연도: document.getElementById("inputYear").value,
@@ -492,13 +507,16 @@
       assessments.sort(function (a, b) {
         return a.날짜.localeCompare(b.날짜);
       });
-      renderTable("teacherList", assessments, true);
-      renderTable("studentList", getFilteredForStudent(), false);
-      renderAdminList(); 
+      
+      // 화면 종류에 따라 표를 다르게 렌더링 (teacher, student, admin 모드 추가)
+      renderTable("teacherList", assessments, 'teacher');
+      renderTable("studentList", getFilteredForStudent(), 'student');
+      renderTable("adminAssessmentList", assessments, 'admin'); 
+      renderAdminTeacherList(); 
     }
 
-    function renderAdminList() {
-      const list = document.getElementById("adminList");
+    function renderAdminTeacherList() {
+      const list = document.getElementById("adminTeacherList");
       if (!list) return;
 
       if (teachers.length === 0) {
@@ -506,22 +524,28 @@
         return;
       }
 
-      let html = '<div class="table-wrap"><table><tr><th>선생님 이름</th><th>비밀번호</th></tr>';
-      teachers.forEach(function(t) {
-        html += '<tr><td>' + t.이름 + '</td><td style="font-family: monospace; font-size: 14px; font-weight: bold; color: #1F7A88;">' + t.비밀번호 + '</td></tr>';
+      let html = '<div class="table-wrap"><table><tr><th>선생님 이름</th><th>비밀번호</th><th>삭제</th></tr>';
+      teachers.forEach(function(t, index) {
+        html += '<tr>' +
+                '<td>' + t.이름 + '</td>' +
+                '<td style="font-family: monospace; font-size: 14px; font-weight: bold; color: #1F7A88;">' + t.비밀번호 + '</td>' +
+                '<td><span class="del" onclick="deleteTeacher(' + index + ')">삭제</span></td>' +
+                '</tr>';
       });
       html += '</table></div>';
       list.innerHTML = html;
     }
 
-    function renderTable(listId, rows, isTeacherView) {
+    function renderTable(listId, rows, viewMode) {
       const list = document.getElementById(listId);
       if (!list) return;
 
       if (rows.length === 0) {
-        list.innerHTML = '<p class="empty">조건에 맞는 수행평가가 없어요.</p>';
+        list.innerHTML = '<p class="empty">등록된 수행평가가 없어요.</p>';
         return;
       }
+      
+      const canDelete = (viewMode === 'teacher' || viewMode === 'admin');
 
       let html =
         '<div class="table-wrap"><table>' +
@@ -537,7 +561,7 @@
           '<th>교시</th>' +
           '<th>배점</th>' +
           '<th>작성 교사</th>' +
-          (isTeacherView ? '<th>삭제</th>' : '') +
+          (canDelete ? '<th>삭제</th>' : '') +
         '</tr>';
 
       rows.forEach(function (item) {
@@ -550,11 +574,17 @@
         const ddayBadgeHtml = '<span class="badge" style="background-color:' + ddayBgColor + ';">' + ddayText + '</span>';
 
         let delCell = '';
-        if (isTeacherView) {
-          if (item.작성자 === teacherName) {
-            delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">삭제</span></td>';
-          } else {
-            delCell = '<td style="color:#C4CBC8; font-size:11px;">권한없음</td>';
+        if (canDelete) {
+          if (viewMode === 'admin') {
+            // 관리자는 무조건 강제 삭제 가능
+            delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">강제삭제</span></td>';
+          } else if (viewMode === 'teacher') {
+            // 선생님은 본인 글만 삭제 가능
+            if (item.작성자 === teacherName) {
+              delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">삭제</span></td>';
+            } else {
+              delCell = '<td style="color:#C4CBC8; font-size:11px;">권한없음</td>';
+            }
           }
         }
 
