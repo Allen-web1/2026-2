@@ -1,0 +1,15 @@
+{
+  "name": "수행평가 플래너",
+  "short_name": "수행평가",
+  "start_url": "./teacher.html",
+  "display": "standalone",
+  "background_color": "#EEF2F1",
+  "theme_color": "#1F7A88",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
