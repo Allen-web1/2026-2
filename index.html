@@ -42,6 +42,34 @@
     .info-text { margin-top: 24px; font-size: 13px; color: #5E6B72; line-height: 1.6; background-color: white; padding: 16px; border-radius: 12px; border: 1px solid #E2E8E6; }
     .admin-btn { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #8A939A; background: white; border: 1px solid #E2E8E6; border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .admin-btn:hover { background: #EEF2F1; color: #3F4A52; }
+
+    /* 목록/달력 보기 전환 */
+    .viewtabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .viewtab { flex: 1; padding: 10px; border: 1px solid #E2E8E6; border-radius: 10px; background: white; color: #5E6B72; font-size: 14px; font-weight: bold; cursor: pointer; }
+    .viewtab.active { background: #1F7A88; color: white; border-color: #1F7A88; }
+
+    /* 달력 */
+    .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .cal-head button { background: white; border: 1px solid #E2E8E6; border-radius: 8px; padding: 6px 16px; font-size: 18px; cursor: pointer; color: #3F4A52; }
+    .cal-title { font-size: 16px; font-weight: bold; color: #1F7A88; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-dow { text-align: center; font-size: 12px; font-weight: bold; color: #5E6B72; padding: 4px 0; }
+    .cal-cell { background: white; border: 1px solid #E2E8E6; border-radius: 8px; min-height: 62px; padding: 4px; overflow: hidden; }
+    .cal-cell.empty { background: transparent; border: none; }
+    .cal-cell.has { border-color: #1F7A88; cursor: pointer; }
+    .cal-date { font-size: 12px; color: #3F4A52; font-weight: bold; }
+    .cal-date.sun { color: #D65745; }
+    .cal-date.sat { color: #3F6DB5; }
+    .cal-tag { font-size: 10px; color: white; background: #1F7A88; border-radius: 4px; padding: 1px 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cal-more { font-size: 10px; color: #5E6B72; margin-top: 2px; }
+
+    /* 날짜 상세 팝업 */
+    .modal-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
+    .modal { background: white; border-radius: 14px; padding: 20px; max-width: 400px; width: 100%; max-height: 80vh; overflow-y: auto; box-sizing: border-box; }
+    .modal h3 { margin-top: 0; color: #1F7A88; }
+    .modal .item { border-top: 1px solid #E2E8E6; padding: 12px 0; font-size: 14px; color: #3F4A52; line-height: 1.6; }
+    .modal .item b { color: #1E2A30; }
+    .modal .close { width: 100%; margin-top: 14px; padding: 12px; border: none; border-radius: 8px; background: #1F7A88; color: white; font-weight: bold; font-size: 14px; cursor: pointer; }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -226,6 +254,10 @@
       <h1 style="color:#1F7A88;">내 수행평가</h1>
       <button class="logout" onclick="showScreen('landingScreen')">처음으로</button>
     </div>
+    <div class="viewtabs">
+      <button id="tabList" class="viewtab active" onclick="switchView('list')">📋 목록</button>
+      <button id="tabCal" class="viewtab" onclick="switchView('calendar')">📅 달력</button>
+    </div>
     <div class="search">
       <div>
         <label>연도</label>
@@ -276,7 +308,10 @@
       <button class="reset" onclick="resetSearch()">초기화</button>
     </div>
     <div id="studentList"></div>
+    <div id="studentCalendar" style="display:none;"></div>
   </div>
+
+  <div id="dayModal" style="display:none;"></div>
 
   <div id="adminScreen" style="display:none;">
     <div class="topbar">
@@ -327,6 +362,12 @@
     let teachers = {};       // { uid: {학교명, 이름, 이메일}, ... }
     let teacherName = "";    // 현재 로그인한 선생님 이름 (화면 표시·작성자용)
     let currentUid = "";     // 현재 로그인한 사용자 고유 id
+
+    // 학생 화면 보기 상태 (목록 / 달력)
+    let studentView = "list";
+    const _now = new Date();
+    let calYear = _now.getFullYear();
+    let calMonth = _now.getMonth();  // 0=1월
 
     // ── 화면 전환 ─────────────────────────────────
     const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminScreen"];
@@ -628,6 +669,121 @@
       renderTable("studentList", getFilteredForStudent(), 'student');
       renderTable("adminAssessmentList", assessments, 'admin');
       renderAdminTeacherList();
+
+      if (studentView === "calendar") {
+        renderStudentCalendar();
+      }
+    }
+
+    // ── 학생 화면: 목록 / 달력 전환 ────────────────
+    function switchView(view) {
+      studentView = view;
+      document.getElementById("tabList").classList.toggle("active", view === "list");
+      document.getElementById("tabCal").classList.toggle("active", view === "calendar");
+      document.getElementById("studentList").style.display = (view === "list") ? "block" : "none";
+      document.getElementById("studentCalendar").style.display = (view === "calendar") ? "block" : "none";
+      render();
+    }
+
+    // ── 이전/다음 달 이동 ─────────────────────────
+    function changeMonth(delta) {
+      calMonth += delta;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderStudentCalendar();
+    }
+
+    // ── 달력 그리기 ───────────────────────────────
+    function renderStudentCalendar() {
+      const container = document.getElementById("studentCalendar");
+      if (!container) return;
+
+      const rows = getFilteredForStudent();
+
+      // 날짜별로 수행평가 묶기
+      const byDate = {};
+      rows.forEach(function (item) {
+        if (!byDate[item.날짜]) byDate[item.날짜] = [];
+        byDate[item.날짜].push(item);
+      });
+
+      const startDow = new Date(calYear, calMonth, 1).getDay(); // 0=일
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const dow = ["일", "월", "화", "수", "목", "금", "토"];
+
+      let html = '<div class="cal-head">' +
+        '<button onclick="changeMonth(-1)">‹</button>' +
+        '<span class="cal-title">' + calYear + '년 ' + (calMonth + 1) + '월</span>' +
+        '<button onclick="changeMonth(1)">›</button>' +
+        '</div>';
+
+      html += '<div class="cal-grid">';
+      dow.forEach(function (d) { html += '<div class="cal-dow">' + d + '</div>'; });
+
+      // 1일 앞의 빈 칸
+      for (let i = 0; i < startDow; i++) {
+        html += '<div class="cal-cell empty"></div>';
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const mm = String(calMonth + 1).padStart(2, "0");
+        const dd = String(d).padStart(2, "0");
+        const dateStr = calYear + "-" + mm + "-" + dd;
+        const items = byDate[dateStr] || [];
+        const dowIndex = (startDow + d - 1) % 7;
+
+        let dateClass = "cal-date";
+        if (dowIndex === 0) dateClass += " sun";
+        else if (dowIndex === 6) dateClass += " sat";
+
+        let inner = '<div class="' + dateClass + '">' + d + '</div>';
+        items.slice(0, 2).forEach(function (it) {
+          inner += '<div class="cal-tag">' + it.과목 + '</div>';
+        });
+        if (items.length > 2) {
+          inner += '<div class="cal-more">+' + (items.length - 2) + '</div>';
+        }
+
+        const cellClass = "cal-cell" + (items.length ? " has" : "");
+        const clickAttr = items.length ? ' onclick="openDay(\'' + dateStr + '\')"' : '';
+        html += '<div class="' + cellClass + '"' + clickAttr + '>' + inner + '</div>';
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ── 날짜 클릭 시 그날 상세 팝업 ────────────────
+    function openDay(dateStr) {
+      const rows = getFilteredForStudent().filter(function (it) { return it.날짜 === dateStr; });
+
+      let html = '<div class="modal-bg" onclick="closeModal()">' +
+                 '<div class="modal" onclick="event.stopPropagation()">';
+      html += '<h3>' + dateStr + ' 수행평가</h3>';
+
+      rows.forEach(function (it) {
+        const classText = (it.반 === "전체") ? "공통" : (it.반 + "반");
+        html += '<div class="item">' +
+          '<b>' + it.과목 + '</b> · ' + it.학년 + '학년 ' + classText + '<br>' +
+          '<b>' + it.수행평가명 + '</b><br>' +
+          (it.주제 ? '주제: ' + it.주제 + '<br>' : '') +
+          (it.교시 ? '교시: ' + it.교시 + ' · ' : '') +
+          (it.배점 ? '배점: ' + it.배점 : '') +
+          '</div>';
+      });
+
+      html += '<button class="close" onclick="closeModal()">닫기</button>';
+      html += '</div></div>';
+
+      const m = document.getElementById("dayModal");
+      m.innerHTML = html;
+      m.style.display = "block";
+    }
+
+    function closeModal() {
+      const m = document.getElementById("dayModal");
+      m.style.display = "none";
+      m.innerHTML = "";
     }
 
     function renderAdminTeacherList() {
