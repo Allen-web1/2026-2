@@ -100,8 +100,8 @@
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
       <input id="signupSchool" placeholder="학교명 (예: 인천고잔고등학교)">
       <input id="signupName" placeholder="이름 (예: 원선생)">
-      <input id="signupEmail" type="email" placeholder="이메일 (예: teacher@school.com)">
-      <input id="signupPw" type="password" placeholder="비밀번호 (6자 이상, 숫자만 가능)">
+      <input id="signupEmail" type="email" placeholder="이메일 (예: teacher@ice.go.kr)">
+      <input id="signupPw" type="password" placeholder="비밀번호 (6자 이상, 영문, 숫자만 사용해도 가능)">
       <input id="signupPw2" type="password" placeholder="비밀번호 확인">
       <button class="primary" style="background-color:#3F6DB5;" onclick="signup()">가입하기</button>
       <button class="link" onclick="showScreen('landingScreen')">← 처음으로</button>
@@ -438,12 +438,15 @@
           // 계정 생성 성공 → 콘솔 사용자 목록에도 보이도록 "표시 이름"에 이름+학교 저장
           const user = cred.user;
           const uid = user.uid;
-          user.updateProfile({ displayName: name + " (" + school + ")" });
-          return db.ref('teachers/' + uid).set({
-            학교명: school,
-            이름: name,
-            이메일: email
-          });
+          // 이름 붙이기와 DB 저장을 둘 다 끝까지 기다림
+          return user.updateProfile({ displayName: name + " (" + school + ")" })
+            .then(function () {
+              return db.ref('teachers/' + uid).set({
+                학교명: school,
+                이름: name,
+                이메일: email
+              });
+            });
         })
         .then(function () {
           alert("가입 완료! 이제 로그인해 주세요.");
