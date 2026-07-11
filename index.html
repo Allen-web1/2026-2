@@ -62,6 +62,7 @@
     .cal-date.sat { color: #3F6DB5; }
     .cal-tag { font-size: 10px; color: white; background: #1F7A88; border-radius: 4px; padding: 1px 4px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .cal-more { font-size: 10px; color: #5E6B72; margin-top: 2px; }
+    .cal-holiday { font-size: 9px; color: #D65745; font-weight: bold; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* 날짜 상세 팝업 */
     .modal-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; }
@@ -369,6 +370,37 @@
     let calYear = _now.getFullYear();
     let calMonth = _now.getMonth();  // 0=1월
 
+    // ── 공휴일 (공공데이터포털 API에서 실시간으로 받아옴) ──
+    let holidays = {};              // { "2026-09-25": "추석", ... }
+    let loadedYears = {};           // 이미 불러온 연도 기록
+    const HOLIDAY_KEY = "ef77a3044e1b2926603dd5f61cdc9f884455e053a26bb4fe5990467afb67e266";
+
+    function loadHolidays(year) {
+      const url = "https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo"
+        + "?serviceKey=" + encodeURIComponent(HOLIDAY_KEY)
+        + "&solYear=" + year
+        + "&numOfRows=100";
+
+      fetch(url)
+        .then(function (res) { return res.text(); })
+        .then(function (text) {
+          const xml = new DOMParser().parseFromString(text, "text/xml");
+          const items = xml.getElementsByTagName("item");
+          for (let i = 0; i < items.length; i++) {
+            const locNode = items[i].getElementsByTagName("locdate")[0];
+            const nameNode = items[i].getElementsByTagName("dateName")[0];
+            if (!locNode || !nameNode) continue;
+            const s = String(locNode.textContent);
+            const dateStr = s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
+            holidays[dateStr] = nameNode.textContent;
+          }
+          renderStudentCalendar();
+        })
+        .catch(function (err) {
+          console.log("공휴일 불러오기 실패:", err);
+        });
+    }
+
     // ── 화면 전환 ─────────────────────────────────
     const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminScreen"];
 
@@ -435,9 +467,8 @@
 
       auth.createUserWithEmailAndPassword(email, pw)
         .then(function (cred) {
-          // 계정 생성 성공 → 콘솔 사용자 목록에도 보이도록 "표시 이름"에 이름+학교 저장
-          const user = cred.user;
-          const uid = user.uid;
+          // 계정 생성 성공 → 이름·학교명은 DB에 따로 저장 (비밀번호는 Firebase가 안전하게 관리)
+          const uid = cred.user.uid;
           return db.ref('teachers/' + uid).set({
             학교명: school,
             이름: name,
@@ -691,6 +722,10 @@
       calMonth += delta;
       if (calMonth < 0) { calMonth = 11; calYear--; }
       if (calMonth > 11) { calMonth = 0; calYear++; }
+      if (!loadedYears[calYear]) {
+        loadedYears[calYear] = true;
+        loadHolidays(calYear);
+      }
       renderStudentCalendar();
     }
 
@@ -734,10 +769,13 @@
         const dowIndex = (startDow + d - 1) % 7;
 
         let dateClass = "cal-date";
-        if (dowIndex === 0) dateClass += " sun";
+        if (holidays[dateStr] || dowIndex === 0) dateClass += " sun";
         else if (dowIndex === 6) dateClass += " sat";
 
         let inner = '<div class="' + dateClass + '">' + d + '</div>';
+        if (holidays[dateStr]) {
+          inner += '<div class="cal-holiday">' + holidays[dateStr] + '</div>';
+        }
         items.slice(0, 2).forEach(function (it) {
           inner += '<div class="cal-tag">' + it.과목 + '</div>';
         });
@@ -886,6 +924,8 @@
 
     // ── 시작 ─────────────────────────────────────
     load();
+    loadedYears[calYear] = true;
+    loadHolidays(calYear);
     showScreen("landingScreen");
   </script>
 </body>
