@@ -40,14 +40,13 @@
     .del { color: #D65745; font-weight: bold; cursor: pointer; }
     .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; color: white; font-weight: bold; font-size: 11px; margin-right: 6px; }
     .info-text { margin-top: 24px; font-size: 13px; color: #5E6B72; line-height: 1.6; background-color: white; padding: 16px; border-radius: 12px; border: 1px solid #E2E8E6; }
-    
-    /* 관리자 버튼 스타일 */
     .admin-btn { position: fixed; bottom: 20px; right: 20px; font-size: 12px; color: #8A939A; background: white; border: 1px solid #E2E8E6; border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .admin-btn:hover { background: #EEF2F1; color: #3F4A52; }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -55,17 +54,17 @@
     <div class="center">
       <h1>수행평가 플래너</h1>
       <p style="color:#5E6B72;">선생님은 등록하고, 학생은 확인해요.</p>
-      <button class="role-btn role-teacher" onclick="showScreen('teacherLoginScreen')">선생님만 로그인</button>
-      <button class="role-btn role-signup" onclick="showScreen('signupScreen')">선생님만 회원가입</button>
+      <button class="role-btn role-teacher" onclick="showScreen('teacherLoginScreen')">선생님 로그인</button>
+      <button class="role-btn role-signup" onclick="showScreen('signupScreen')">선생님 회원가입</button>
       <button class="role-btn role-student" onclick="showScreen('studentScreen')">★수행평가 일정 확인하기(학생용)★</button>
-      
+
       <div class="info-text">
         <strong>선생님</strong>만 회원가입 필요<br>
         <strong>학생</strong>은 바로 '★수행평가 일정 확인하기(학생용)★' 클릭
       </div>
     </div>
-    
-    <button class="admin-btn" onclick="showScreen('adminLoginScreen')">⚙️ 관리자</button>
+
+    <button class="admin-btn" onclick="showScreen('teacherLoginScreen')">⚙️ 관리자</button>
   </div>
 
   <div id="signupScreen" style="display:none;">
@@ -73,7 +72,8 @@
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 회원가입</h2>
       <input id="signupSchool" placeholder="학교명 (예: 한국고등학교)">
       <input id="signupName" placeholder="이름 (예: 원선생)">
-      <input id="signupPw" type="password" placeholder="비밀번호">
+      <input id="signupEmail" type="email" placeholder="이메일 (예: teacher@school.com)">
+      <input id="signupPw" type="password" placeholder="비밀번호 (6자 이상)">
       <input id="signupPw2" type="password" placeholder="비밀번호 확인">
       <button class="primary" style="background-color:#3F6DB5;" onclick="signup()">가입하기</button>
       <button class="link" onclick="showScreen('landingScreen')">← 처음으로</button>
@@ -83,10 +83,10 @@
   <div id="teacherLoginScreen" style="display:none;">
     <div class="box">
       <h2 style="color:#3F6DB5; margin-top:0;">선생님 로그인</h2>
-      <input id="loginName" placeholder="이름">
+      <input id="loginEmail" type="email" placeholder="이메일">
       <input id="loginPw" type="password" placeholder="비밀번호">
       <button class="primary" style="background-color:#3F6DB5;" onclick="teacherLogin()">로그인</button>
-      <button class="link" onclick="showScreen('findPwScreen')">비밀번호를 잊으셨나요? 비밀번호 찾기</button>
+      <button class="link" onclick="showScreen('findPwScreen')">비밀번호를 잊으셨나요? 비밀번호 재설정</button>
       <button class="link" onclick="showScreen('signupScreen')">계정이 없으신가요? 회원가입</button>
       <button class="link" onclick="showScreen('landingScreen')">← 처음으로</button>
     </div>
@@ -94,10 +94,10 @@
 
   <div id="findPwScreen" style="display:none;">
     <div class="box">
-      <h2 style="color:#3F6DB5; margin-top:0;">비밀번호 찾기</h2>
-      <p style="font-size:13px; color:#5E6B72;">가입 시 입력했던 이름을 입력해 주세요.</p>
-      <input id="findPwName" placeholder="가입한 이름">
-      <button class="primary" style="background-color:#3F6DB5;" onclick="findPassword()">비밀번호 확인</button>
+      <h2 style="color:#3F6DB5; margin-top:0;">비밀번호 재설정</h2>
+      <p style="font-size:13px; color:#5E6B72;">가입한 이메일을 입력하면 재설정 링크를 메일로 보내드려요.</p>
+      <input id="findPwEmail" type="email" placeholder="가입한 이메일">
+      <button class="primary" style="background-color:#3F6DB5;" onclick="sendReset()">재설정 메일 보내기</button>
       <button class="link" onclick="showScreen('teacherLoginScreen')">← 로그인 화면으로</button>
     </div>
   </div>
@@ -278,28 +278,18 @@
     <div id="studentList"></div>
   </div>
 
-  <div id="adminLoginScreen" style="display:none;">
-    <div class="box">
-      <h2 style="color:#D65745; margin-top:0;">관리자 로그인</h2>
-      <input id="adminId" placeholder="관리자 아이디">
-      <input id="adminPw" type="password" placeholder="비밀번호">
-      <button class="primary" style="background-color:#D65745;" onclick="adminLogin()">관리자 접속</button>
-      <button class="link" onclick="showScreen('landingScreen')">← 처음으로</button>
-    </div>
-  </div>
-
   <div id="adminScreen" style="display:none;">
     <div class="topbar">
       <h1 style="color:#D65745;">관리자 모드</h1>
-      <button class="logout" onclick="showScreen('landingScreen')">처음으로</button>
+      <button class="logout" onclick="logout()">로그아웃</button>
     </div>
-    
+
     <div class="box" style="max-width: 500px; margin-bottom: 20px;">
       <h2 style="color:#D65745; margin-top:0; font-size: 18px;">선생님 계정 관리</h2>
-      <p style="font-size:13px; color:#5E6B72;">가입된 선생님 계정을 삭제할 수 있습니다.</p>
+      <p style="font-size:13px; color:#5E6B72;">가입된 선생님의 프로필 정보를 삭제할 수 있습니다. (로그인 계정 자체 삭제는 서버가 필요합니다.)</p>
       <div id="adminTeacherList"></div>
     </div>
-    
+
     <div class="box" style="max-width: 100%; margin-top: 0; padding-bottom: 5px;">
       <h2 style="color:#D65745; margin-top:0; font-size: 18px;">전체 수행평가 관리</h2>
       <p style="font-size:13px; color:#5E6B72;">등록된 모든 수행평가를 강제로 삭제할 수 있습니다.</p>
@@ -309,178 +299,207 @@
 
   <script>
     // =========================================================================
-    // 💡 전달해주신 파이어베이스 설정 코드 + 누락된 데이터베이스 URL 추가
+    // Firebase 설정
     // =========================================================================
     const firebaseConfig = {
       apiKey: "AIzaSyABtoGeLL73U3J06spvN7ZRLWmLgQE2INA",
       authDomain: "project-942164930636902697.firebaseapp.com",
-      databaseURL: "https://project-942164930636902697-default-rtdb.firebaseio.com", // 실시간 데이터베이스 작동을 위해 필수
+      databaseURL: "https://project-942164930636902697-default-rtdb.firebaseio.com",
       projectId: "project-942164930636902697",
       storageBucket: "project-942164930636902697.firebasestorage.app",
       messagingSenderId: "67121578416",
       appId: "1:67121578416:web:f62598832c2aa10df35675"
     };
 
-    // 파이어베이스 초기화
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
     const db = firebase.database();
+    const auth = firebase.auth();
+
     // =========================================================================
+    // ⚠️ 관리자 이메일: 이 이메일로 회원가입하고 로그인하면 관리자 화면이 열립니다.
+    //    반드시 본인이 쓸 이메일로 바꾸고, 그 이메일로 한 번 회원가입해 두세요.
+    // =========================================================================
+    const ADMIN_EMAIL = "won11208@naver.com";
 
     let assessments = [];
-    let teachers = [];       
-    let teacherName = "";    
+    let teachers = {};       // { uid: {학교명, 이름, 이메일}, ... }
+    let teacherName = "";    // 현재 로그인한 선생님 이름 (화면 표시·작성자용)
+    let currentUid = "";     // 현재 로그인한 사용자 고유 id
 
     // ── 화면 전환 ─────────────────────────────────
-    const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminLoginScreen", "adminScreen"];
-    
+    const screens = ["landingScreen", "signupScreen", "teacherLoginScreen", "findPwScreen", "teacherScreen", "studentScreen", "adminScreen"];
+
     function showScreen(id) {
       screens.forEach(function (s) {
         document.getElementById(s).style.display = "none";
       });
       document.getElementById(id).style.display = "block";
-      
-      if (id === 'findPwScreen') {
-        document.getElementById("findPwName").value = "";
-      } else if (id === 'adminLoginScreen') {
-        document.getElementById("adminId").value = "";
-        document.getElementById("adminPw").value = "";
-      }
-      
       render();
     }
 
-    // ── 파이어베이스 실시간 저장 ───────────────────────────
-    function saveTeachers() {
-      db.ref('teachers').set(teachers);
-    }
-    
+    // ── 로그인 상태 유지 (새로고침해도 유지) ───────────
+    auth.onAuthStateChanged(function (user) {
+      if (user) {
+        currentUid = user.uid;
+        if (user.email !== ADMIN_EMAIL) {
+          db.ref('teachers/' + user.uid).once('value').then(function (snap) {
+            const t = snap.val();
+            if (t && t.이름) teacherName = t.이름;
+          });
+        } else {
+          teacherName = "관리자";
+        }
+      } else {
+        currentUid = "";
+        teacherName = "";
+      }
+    });
+
+    // ── 데이터 실시간 저장/불러오기 ───────────────────
     function save() {
       db.ref('assessments').set(assessments);
     }
 
-    // ── 파이어베이스 실시간 불러오기 ───────────────────────
     function load() {
-      // 1. 수행평가 데이터 실시간 감지
-      db.ref('assessments').on('value', function(snapshot) {
+      db.ref('assessments').on('value', function (snapshot) {
         const data = snapshot.val();
         assessments = data ? data : [];
-        render(); // 변경사항 즉시 화면에 반영
+        render();
       });
-
-      // 2. 선생님 계정 데이터 실시간 감지
-      db.ref('teachers').on('value', function(snapshot) {
+      db.ref('teachers').on('value', function (snapshot) {
         const data = snapshot.val();
-        teachers = data ? data : [];
-        render(); // 변경사항 즉시 화면에 반영
+        teachers = data ? data : {};
+        render();
       });
     }
 
-    // ── 회원가입 / 로그인 / 비밀번호 찾기 ─────────
+    // ── 회원가입 (Firebase 인증으로 계정 생성) ─────────
     function signup() {
       const school = document.getElementById("signupSchool").value.trim();
       const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
       const pw = document.getElementById("signupPw").value;
       const pw2 = document.getElementById("signupPw2").value;
 
-      if (school === "" || name === "" || pw === "") {
-        alert("학교명, 이름, 비밀번호를 모두 입력해 주세요.");
+      if (school === "" || name === "" || email === "" || pw === "") {
+        alert("학교명, 이름, 이메일, 비밀번호를 모두 입력해 주세요.");
         return;
       }
       if (pw !== pw2) {
         alert("비밀번호가 서로 달라요. 다시 확인해 주세요.");
         return;
       }
-      
-      // 선생님 이름 중복 가입 방지
-      const exists = teachers.some(function (t) { return t.이름 === name; });
-      if (exists) {
-        alert("동명이인입니다. 이름(교과)로 가입해주세요. '예시: 원종휘(과학)'");
-        return;
-      }
 
-      teachers.push({ 학교명: school, 이름: name, 비밀번호: pw });
-      saveTeachers();
-      alert("가입 완료! 이제 로그인해 주세요.");
-
-      document.getElementById("signupSchool").value = "";
-      document.getElementById("signupName").value = "";
-      document.getElementById("signupPw").value = "";
-      document.getElementById("signupPw2").value = "";
-      showScreen("teacherLoginScreen");
+      auth.createUserWithEmailAndPassword(email, pw)
+        .then(function (cred) {
+          // 계정 생성 성공 → 이름·학교명은 DB에 따로 저장 (비밀번호는 Firebase가 안전하게 관리)
+          const uid = cred.user.uid;
+          return db.ref('teachers/' + uid).set({
+            학교명: school,
+            이름: name,
+            이메일: email
+          });
+        })
+        .then(function () {
+          alert("가입 완료! 이제 로그인해 주세요.");
+          document.getElementById("signupSchool").value = "";
+          document.getElementById("signupName").value = "";
+          document.getElementById("signupEmail").value = "";
+          document.getElementById("signupPw").value = "";
+          document.getElementById("signupPw2").value = "";
+          showScreen("teacherLoginScreen");
+        })
+        .catch(function (error) {
+          if (error.code === "auth/email-already-in-use") {
+            alert("이미 가입된 이메일이에요.");
+          } else if (error.code === "auth/weak-password") {
+            alert("비밀번호는 6자 이상이어야 해요.");
+          } else if (error.code === "auth/invalid-email") {
+            alert("이메일 형식이 올바르지 않아요.");
+          } else {
+            alert("가입 중 문제가 생겼어요: " + error.message);
+          }
+        });
     }
 
+    // ── 로그인 (Firebase 인증으로 확인) ────────────────
     function teacherLogin() {
-      const name = document.getElementById("loginName").value.trim();
+      const email = document.getElementById("loginEmail").value.trim();
       const pw = document.getElementById("loginPw").value;
 
-      // 관리자 전용 비밀번호를 쳤을 때 관리자 화면으로 연결
-      if (name === "원종휘" && pw === "jh73067533!!!") {
-        document.getElementById("loginName").value = "";
-        document.getElementById("loginPw").value = "";
-        showScreen("adminScreen");
+      if (email === "" || pw === "") {
+        alert("이메일과 비밀번호를 입력해 주세요.");
         return;
       }
 
-      const found = teachers.find(function (t) {
-        return t.이름 === name && t.비밀번호 === pw;
-      });
+      auth.signInWithEmailAndPassword(email, pw)
+        .then(function (cred) {
+          const user = cred.user;
+          currentUid = user.uid;
+          document.getElementById("loginEmail").value = "";
+          document.getElementById("loginPw").value = "";
 
-      if (!found) {
-        alert("이름 또는 비밀번호가 올바르지 않아요.");
-        return;
-      }
+          if (user.email === ADMIN_EMAIL) {
+            teacherName = "관리자";
+            showScreen("adminScreen");
+            return;
+          }
 
-      teacherName = found.이름;
-      document.getElementById("loginName").value = "";
-      document.getElementById("loginPw").value = "";
-      showScreen("teacherScreen");
-    }
-    
-    function findPassword() {
-      const name = document.getElementById("findPwName").value.trim();
-
-      if (name === "") {
-        alert("이름을 입력해 주세요.");
-        return;
-      }
-
-      const found = teachers.find(function (t) { return t.이름 === name; });
-
-      if (!found) {
-        alert("가입되지 않은 이름입니다.");
-        return;
-      }
-
-      alert(found.이름 + " 선생님의 등록된 비밀번호는 [" + found.비밀번호 + "] 입니다.");
-      showScreen("teacherLoginScreen");
+          db.ref('teachers/' + user.uid).once('value').then(function (snap) {
+            const t = snap.val();
+            teacherName = (t && t.이름) ? t.이름 : user.email;
+            showScreen("teacherScreen");
+          });
+        })
+        .catch(function (error) {
+          if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+            alert("비밀번호가 올바르지 않아요.");
+          } else if (error.code === "auth/user-not-found") {
+            alert("가입되지 않은 이메일이에요.");
+          } else if (error.code === "auth/invalid-email") {
+            alert("이메일 형식이 올바르지 않아요.");
+          } else {
+            alert("로그인 중 문제가 생겼어요: " + error.message);
+          }
+        });
     }
 
-    // ── 관리자 기능 (로그인 및 교사 삭제) ─────────
-    function adminLogin() {
-      const id = document.getElementById("adminId").value.trim();
-      const pw = document.getElementById("adminPw").value;
-
-      if (id === "원종휘" && pw === "jh73067533!!!") {
-        document.getElementById("adminId").value = "";
-        document.getElementById("adminPw").value = "";
-        showScreen("adminScreen");
-      } else {
-        alert("관리자 아이디 또는 비밀번호가 올바르지 않습니다.");
-      }
-    }
-    
-    function deleteTeacher(index) {
-      if (!confirm("이 선생님 계정을 정말 삭제할까요?")) {
+    // ── 비밀번호 재설정 메일 보내기 ────────────────────
+    function sendReset() {
+      const email = document.getElementById("findPwEmail").value.trim();
+      if (email === "") {
+        alert("이메일을 입력해 주세요.");
         return;
       }
-      teachers.splice(index, 1);
-      saveTeachers();
+      auth.sendPasswordResetEmail(email)
+        .then(function () {
+          alert("비밀번호 재설정 메일을 보냈어요. 메일함(스팸함도)을 확인해 주세요.");
+          showScreen("teacherLoginScreen");
+        })
+        .catch(function (error) {
+          if (error.code === "auth/user-not-found") {
+            alert("가입되지 않은 이메일이에요.");
+          } else {
+            alert("메일 전송에 실패했어요: " + error.message);
+          }
+        });
     }
 
+    // ── 관리자: 선생님 프로필 삭제 ─────────────────────
+    function deleteTeacher(uid) {
+      if (!confirm("이 선생님의 프로필 정보를 삭제할까요?\n(로그인 계정 자체는 서버에서만 삭제할 수 있어요.)")) {
+        return;
+      }
+      db.ref('teachers/' + uid).remove();
+    }
+
+    // ── 로그아웃 ──────────────────────────────────────
     function logout() {
+      auth.signOut();
       teacherName = "";
+      currentUid = "";
       showScreen("landingScreen");
     }
 
@@ -517,7 +536,8 @@
         날짜: document.getElementById("inputDate").value,
         교시: document.getElementById("inputPeriod").value,
         배점: document.getElementById("inputScore").value,
-        작성자: teacherName
+        작성자: teacherName,
+        작성자uid: currentUid
       };
 
       if (item.과목 === "" || item.수행평가명 === "" || item.날짜 === "") {
@@ -544,7 +564,7 @@
       save();
     }
 
-    // ── 학생 화면 검색 ──────────────────────────────────────
+    // ── 학생 화면 검색 ──────────────────────────────
     function resetSearch() {
       document.getElementById("searchYear").value = "";
       document.getElementById("searchSemester").value = "";
@@ -571,7 +591,7 @@
       });
     }
 
-    // ── 선생님 화면 검색 ──────────────────────────────────────
+    // ── 선생님 화면 검색 ────────────────────────────
     function tResetSearch() {
       document.getElementById("tSearchYear").value = "";
       document.getElementById("tSearchSemester").value = "";
@@ -603,29 +623,31 @@
       assessments.sort(function (a, b) {
         return a.날짜.localeCompare(b.날짜);
       });
-      
+
       renderTable("teacherList", getFilteredForTeacher(), 'teacher');
       renderTable("studentList", getFilteredForStudent(), 'student');
-      renderTable("adminAssessmentList", assessments, 'admin'); 
-      renderAdminTeacherList(); 
+      renderTable("adminAssessmentList", assessments, 'admin');
+      renderAdminTeacherList();
     }
 
     function renderAdminTeacherList() {
       const list = document.getElementById("adminTeacherList");
       if (!list) return;
 
-      if (teachers.length === 0) {
+      const uids = teachers ? Object.keys(teachers) : [];
+      if (uids.length === 0) {
         list.innerHTML = '<p class="empty">가입한 선생님이 없습니다.</p>';
         return;
       }
 
-      let html = '<div class="table-wrap"><table><tr><th>학교명</th><th>선생님 이름</th><th>비밀번호</th><th>삭제</th></tr>';
-      teachers.forEach(function(t, index) {
+      let html = '<div class="table-wrap"><table><tr><th>학교명</th><th>선생님 이름</th><th>이메일</th><th>삭제</th></tr>';
+      uids.forEach(function (uid) {
+        const t = teachers[uid];
         html += '<tr>' +
                 '<td>' + (t.학교명 || "-") + '</td>' +
-                '<td>' + t.이름 + '</td>' +
-                '<td style="font-family: monospace; font-size: 14px; font-weight: bold; color: #1F7A88;">' + t.비밀번호 + '</td>' +
-                '<td><span class="del" onclick="deleteTeacher(' + index + ')">삭제</span></td>' +
+                '<td>' + (t.이름 || "-") + '</td>' +
+                '<td style="font-size:13px; color:#1F7A88;">' + (t.이메일 || "-") + '</td>' +
+                '<td><span class="del" onclick="deleteTeacher(\'' + uid + '\')">삭제</span></td>' +
                 '</tr>';
       });
       html += '</table></div>';
@@ -640,8 +662,8 @@
         list.innerHTML = '<p class="empty">등록된 수행평가가 없어요.</p>';
         return;
       }
-      
-      const canDelete = (viewMode === 'teacher' || viewMode === 'admin');
+
+      const canDeleteMode = (viewMode === 'teacher' || viewMode === 'admin');
 
       let html =
         '<div class="table-wrap"><table>' +
@@ -657,24 +679,26 @@
           '<th>교시</th>' +
           '<th>배점</th>' +
           '<th>작성 교사</th>' +
-          (canDelete ? '<th>삭제</th>' : '') +
+          (canDeleteMode ? '<th>삭제</th>' : '') +
         '</tr>';
 
       rows.forEach(function (item) {
         const classText = (item.반 === "전체") ? "공통" : (item.반 + "반");
         const realIndex = assessments.indexOf(item);
-        
+
         const ddayDays = getDday(item.날짜);
         const ddayText = ddayLabel(ddayDays);
         const ddayBgColor = ddayColor(ddayDays);
         const ddayBadgeHtml = '<span class="badge" style="background-color:' + ddayBgColor + ';">' + ddayText + '</span>';
 
         let delCell = '';
-        if (canDelete) {
+        if (canDeleteMode) {
           if (viewMode === 'admin') {
             delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">강제삭제</span></td>';
           } else if (viewMode === 'teacher') {
-            if (item.작성자 === teacherName) {
+            const owned = (item.작성자uid && item.작성자uid === currentUid) ||
+                          (!item.작성자uid && item.작성자 === teacherName);
+            if (owned) {
               delCell = '<td><span class="del" onclick="deleteAssessment(' + realIndex + ')">삭제</span></td>';
             } else {
               delCell = '<td style="color:#C4CBC8; font-size:11px;">권한없음</td>';
@@ -704,7 +728,7 @@
     }
 
     // ── 시작 ─────────────────────────────────────
-    load(); // 페이지가 열리면 파이어베이스 실시간 연동 시작
+    load();
     showScreen("landingScreen");
   </script>
 </body>
