@@ -438,15 +438,11 @@
           // 계정 생성 성공 → 콘솔 사용자 목록에도 보이도록 "표시 이름"에 이름+학교 저장
           const user = cred.user;
           const uid = user.uid;
-          // 이름 붙이기와 DB 저장을 둘 다 끝까지 기다림
-          return user.updateProfile({ displayName: name + " (" + school + ")" })
-            .then(function () {
-              return db.ref('teachers/' + uid).set({
-                학교명: school,
-                이름: name,
-                이메일: email
-              });
-            });
+          return db.ref('teachers/' + uid).set({
+            학교명: school,
+            이름: name,
+            이메일: email
+          });
         })
         .then(function () {
           alert("가입 완료! 이제 로그인해 주세요.");
