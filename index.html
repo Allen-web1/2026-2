@@ -184,6 +184,8 @@
       <input id="inputTitle" placeholder="예: 파스퇴르의 생물속생설 도출 과정을 재연하여 연역적 탐구 방법 분석하기">
       <label>수행평가 주제</label>
       <input id="inputTopic" placeholder="예: 연역적 탐구 방법과 귀납적 탐구 방법 분석">
+      <label>수행평가 범위</label>
+      <input id="inputScope" placeholder="예: 교과서 1~3단원, 실험 보고서 포함">
       <div class="row">
         <div>
           <label>날짜</label>
@@ -608,6 +610,7 @@
         과목: document.getElementById("inputSubject").value,
         수행평가명: document.getElementById("inputTitle").value,
         주제: document.getElementById("inputTopic").value,
+        범위: document.getElementById("inputScope").value,
         날짜: document.getElementById("inputDate").value,
         교시: document.getElementById("inputPeriod").value,
         배점: document.getElementById("inputScore").value,
@@ -626,6 +629,7 @@
       document.getElementById("inputSubject").value = "";
       document.getElementById("inputTitle").value = "";
       document.getElementById("inputTopic").value = "";
+      document.getElementById("inputScope").value = "";
       document.getElementById("inputDate").value = "";
       document.getElementById("inputPeriod").value = "";
       document.getElementById("inputScore").value = "";
@@ -749,7 +753,8 @@
       const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
       const dow = ["일", "월", "화", "수", "목", "금", "토"];
 
-      let html = '<div class="cal-head">' +
+      let html = '<p style="font-size:12px; color:#5E6B72; margin:0 0 10px; line-height:1.5;">📅 달력에서 과목명을 클릭하면 수행평가 주제, 범위, 시간, 배점 등을 확인할 수 있습니다.</p>';
+      html += '<div class="cal-head">' +
         '<button onclick="changeMonth(-1)">‹</button>' +
         '<span class="cal-title">' + calYear + '년 ' + (calMonth + 1) + '월</span>' +
         '<button onclick="changeMonth(1)">›</button>' +
@@ -808,6 +813,7 @@
           '<b>' + it.과목 + '</b> · ' + it.학년 + '학년 ' + classText + '<br>' +
           '<b>' + it.수행평가명 + '</b><br>' +
           (it.주제 ? '주제: ' + it.주제 + '<br>' : '') +
+          (it.범위 ? '범위: ' + it.범위 + '<br>' : '') +
           (it.교시 ? '교시: ' + it.교시 + ' · ' : '') +
           (it.배점 ? '배점: ' + it.배점 : '') +
           '</div>';
@@ -872,6 +878,7 @@
           '<th>과목</th>' +
           '<th>수행평가명</th>' +
           '<th>수행평가 주제</th>' +
+          '<th>범위</th>' +
           '<th>날짜 (D-day)</th>' +
           '<th>교시</th>' +
           '<th>배점</th>' +
@@ -912,6 +919,7 @@
             '<td>' + item.과목 + '</td>' +
             '<td>' + item.수행평가명 + '</td>' +
             '<td>' + (item.주제 || "-") + '</td>' +
+            '<td>' + (item.범위 || "-") + '</td>' +
             '<td>' + ddayBadgeHtml + item.날짜 + '</td>' +
             '<td>' + (item.교시 || "-") + '</td>' +
             '<td>' + (item.배점 || "-") + '</td>' +
